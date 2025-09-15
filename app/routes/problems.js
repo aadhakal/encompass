@@ -4,32 +4,22 @@ import { hash } from 'rsvp';
 
 export default class ProblemsRoute extends Route {
   @service store;
-
-  hideOutlet = true;
+  @service currentUser;
 
   async model() {
-    const user = this.modelFor('application');
-    const userOrg = await user.organization;
-    const recommendedProblems = userOrg
-      ? await userOrg.recommendedProblems
-      : [];
     let problemCriteria = {};
 
-    if (!user.isAdmin) {
+    if (!this.currentUser.isAdmin) {
       problemCriteria = {
         filter: {
-          createdBy: user.id,
+          createdBy: this.currentUser.id,
         },
       };
     }
 
     return hash({
       organizations: this.store.findAll('organization'),
-      sections: this.store.findAll('section'),
       problems: this.store.query('problem', problemCriteria),
-      hideOutlet: this.hideOutlet,
-      currentUser: user,
-      recommendedProblems,
     });
   }
 }
